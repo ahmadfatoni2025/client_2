@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { X, ChefHat, Clock, MapPin, Package } from 'lucide-react'; // Kita pakai icon biar cantik
+import React, { useState, useEffect } from 'react';
+import { X, ChefHat, Clock, MapPin, Package, Save, RotateCcw } from 'lucide-react';
 
-// Tipe data diperlengkap dengan Resep
+// Tipe data
 type Task = {
   id: number;
   menu: string;
@@ -9,8 +9,8 @@ type Task = {
   destination: string;
   status: 'Persiapan' | 'Memasak' | 'Packing' | 'Siap Kirim';
   startTime: string;
-  ingredients: string[]; // Data Bahan
-  instructions: string[]; // Langkah Memasak
+  ingredients: string[];
+  instructions: string[];
 };
 
 const initialTasks: Task[] = [
@@ -79,15 +79,36 @@ const initialTasks: Task[] = [
       "Susun dalam box distribusi per kelas."
     ]
   },
-  // Data dummy tambahan bisa di sini...
 ];
 
 const Dapur = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  // --- BAGIAN BARU: LOAD DATA DARI STORAGE ---
+  // Saat pertama kali dibuka, cek dulu: "Ada data simpanan gak?"
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedData = localStorage.getItem('mbg-dapur-tasks');
+    if (savedData) {
+      return JSON.parse(savedData);
+    } else {
+      return initialTasks;
+    }
+  });
+
   const [filter, setFilter] = useState<string>('Semua');
-  
-  // State untuk menyimpan tugas mana yang sedang dilihat detailnya (null artinya tidak ada)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  // --- BAGIAN BARU: AUTO SAVE ---
+  // Setiap kali 'tasks' berubah (diklik tombol proses), simpan ke localStorage
+  useEffect(() => {
+    localStorage.setItem('mbg-dapur-tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  // Fungsi Reset Data (Darurat kalau mau balik ke awal)
+  const resetData = () => {
+    if(confirm("Yakin mau reset semua status kembali ke awal?")) {
+        setTasks(initialTasks);
+        localStorage.removeItem('mbg-dapur-tasks');
+    }
+  };
 
   const filterOptions = ['Semua', 'Persiapan', 'Memasak', 'Packing', 'Siap Kirim'];
 
@@ -107,7 +128,6 @@ const Dapur = () => {
   const filteredTasks = filter === 'Semua' ? tasks : tasks.filter(task => task.status === filter);
   const getCount = (statusName: string) => statusName === 'Semua' ? tasks.length : tasks.filter(t => t.status === statusName).length;
 
-  // Colors
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Persiapan": return "bg-gray-100 text-gray-600 border-gray-200";
@@ -140,12 +160,24 @@ const Dapur = () => {
           </h1>
           <p className="text-gray-500 mt-1">Monitoring produksi massal & distribusi makanan</p>
         </div>
-        <div className="bg-white px-5 py-2 rounded-lg border border-gray-200 shadow-sm flex items-center gap-3">
-           <div className="text-right">
-             <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Target</p>
-             <p className="font-bold text-orange-600 text-xl leading-none">2.250 Pax</p>
-           </div>
-           <Package className="text-orange-400" size={24} />
+        
+        <div className="flex gap-2">
+            {/* Tombol Reset (Kecil di pojok) */}
+            <button 
+                onClick={resetData}
+                className="bg-white hover:bg-red-50 text-red-500 border border-red-200 p-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors"
+                title="Reset Data ke Awal"
+            >
+                <RotateCcw size={16}/> Reset
+            </button>
+
+            <div className="bg-white px-5 py-2 rounded-lg border border-gray-200 shadow-sm flex items-center gap-3">
+            <div className="text-right">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Target</p>
+                <p className="font-bold text-orange-600 text-xl leading-none">2.250 Pax</p>
+            </div>
+            <Package className="text-orange-400" size={24} />
+            </div>
         </div>
       </div>
 
@@ -176,7 +208,6 @@ const Dapur = () => {
           <div key={task.id} className={`bg-white rounded-xl p-5 border transition-all shadow-sm hover:shadow-md flex flex-col h-full
             ${task.status === 'Siap Kirim' ? 'border-green-200 bg-green-50/30' : 'border-gray-200 hover:border-orange-300'}`}>
             
-            {/* Status & Jam */}
             <div className="flex justify-between items-center mb-4">
               <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(task.status)}`}>
                 {task.status.toUpperCase()}
@@ -186,7 +217,6 @@ const Dapur = () => {
               </span>
             </div>
 
-            {/* Menu Info */}
             <div className="mb-4 flex-grow">
                 <h3 className="text-lg font-bold mb-2 text-gray-800 leading-tight">{task.menu}</h3>
                 <div className="flex items-start gap-2 text-sm text-gray-600 mt-3 p-2 rounded-md bg-gray-50 border border-gray-100">
@@ -198,7 +228,6 @@ const Dapur = () => {
                 </div>
             </div>
 
-            {/* Progress Bar */}
             <div className="mb-5">
                 <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-500 text-xs">Progress ({task.target} Porsi)</span>
@@ -217,7 +246,6 @@ const Dapur = () => {
                 </div>
             </div>
 
-            {/* Tombol Aksi & Detail */}
             <div className="space-y-3 mt-auto">
                 <button 
                   onClick={() => setSelectedTask(task)}
@@ -243,12 +271,10 @@ const Dapur = () => {
         ))}
       </div>
 
-      {/* --- MODAL (POP-UP) RESEP --- */}
+      {/* --- MODAL RESEP TETAP SAMA --- */}
       {selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-            
-            {/* Modal Header */}
             <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{selectedTask.menu}</h2>
@@ -256,63 +282,37 @@ const Dapur = () => {
                    <Package size={16}/> Target Produksi: <span className="font-semibold text-orange-600">{selectedTask.target} Porsi</span>
                 </p>
               </div>
-              <button 
-                onClick={() => setSelectedTask(null)}
-                className="p-2 bg-white rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors border border-gray-200"
-              >
-                <X size={20} />
-              </button>
+              <button onClick={() => setSelectedTask(null)} className="p-2 bg-white rounded-full text-gray-400 hover:text-gray-600 border border-gray-200"><X size={20} /></button>
             </div>
 
-            {/* Modal Content (Scrollable) */}
             <div className="p-6 overflow-y-auto">
               <div className="grid md:grid-cols-2 gap-8">
-                
-                {/* Kolom Bahan */}
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    🥬 Bahan Baku Utama
-                  </h3>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">🥬 Bahan Baku Utama</h3>
                   <ul className="space-y-3">
                     {selectedTask.ingredients.map((ing, idx) => (
                       <li key={idx} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg text-sm text-gray-700 border border-green-100">
-                        <div className="w-2 h-2 mt-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                        {ing}
+                        <div className="w-2 h-2 mt-1.5 rounded-full bg-green-400 flex-shrink-0" />{ing}
                       </li>
                     ))}
                   </ul>
                 </div>
-
-                {/* Kolom Instruksi */}
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    🍳 Instruksi Masak
-                  </h3>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">🍳 Instruksi Masak</h3>
                   <div className="space-y-4">
                     {selectedTask.instructions.map((step, idx) => (
                       <div key={idx} className="flex gap-3 text-sm">
-                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold text-xs border border-orange-200">
-                          {idx + 1}
-                        </span>
+                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold text-xs border border-orange-200">{idx + 1}</span>
                         <p className="text-gray-600 leading-relaxed pt-0.5">{step}</p>
                       </div>
                     ))}
                   </div>
                 </div>
-
               </div>
             </div>
-
-            {/* Modal Footer */}
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-              <button 
-                onClick={() => setSelectedTask(null)}
-                className="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition-colors"
-              >
-                Tutup Resep
-              </button>
+              <button onClick={() => setSelectedTask(null)} className="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium">Tutup Resep</button>
             </div>
-
           </div>
         </div>
       )}
