@@ -9,6 +9,7 @@ import Keuangan from './page/keuangan';
 import Laporan from './page/laporan';
 import Pengaturana from './page/pengaturana';
 import { Navigate } from 'react-router-dom';
+import TambahPemasok from './components/inventasris/TambahPemasok';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/inventory" element={<Inventory />} />
+        <Route path="/inventory/suplayer/suplayer1" element={<TambahPemasok />} />
         <Route path="/nutrisi" element={<Nutrisi />} />
         <Route path="/dapur" element={<Dapur />} />
         <Route path="/keuangan" element={<Keuangan />} />
