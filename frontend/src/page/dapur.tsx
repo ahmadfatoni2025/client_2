@@ -121,14 +121,14 @@ const Dapur = () => {
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex flex-wrap justify-start md:justify-center gap-2 bg-gray-100/50 p-1.5 rounded-full border border-gray-100 max-w-2xl mx-auto overflow-x-auto no-scrollbar">
+                <div className="flex flex-wrap justify-start md:justify-center gap-2 bg-gray-100/50 p-1.5 rounded-full border border-gray-100 max-w-3xl py-4 mx-auto overflow-x-auto no-scrollbar">
                     {filterOptions.map((option) => (
                         <button
                             key={option}
                             onClick={() => setFilter(option)}
                             className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${filter === option
-                                    ? 'bg-white text-orange-600 shadow-md transform scale-105'
-                                    : 'text-gray-500 hover:text-orange-600 hover:bg-white/50'
+                                ? 'bg-white text-orange-600 shadow-md transform scale-105'
+                                : 'text-gray-500 hover:text-orange-600 hover:bg-white/50'
                                 }`}
                         >
                             {option}
@@ -140,11 +140,11 @@ const Dapur = () => {
                 </div>
 
                 {/* Grid Kartu */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {loading ? (
                         Array(3).fill(0).map((_, i) => <div key={i} className="h-64 bg-gray-100 rounded-3xl animate-pulse" />)
                     ) : filteredTasks.map((task) => (
-                        <div key={task.id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col h-full overflow-hidden relative">
+                        <div key={task.id} className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col h-full overflow-hidden relative">
                             {task.status === 'Siap Kirim' && <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-12 -mt-12 opacity-50"></div>}
 
                             <div className="flex justify-between items-center mb-6">

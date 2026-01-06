@@ -58,11 +58,7 @@ const Navbar: React.FC = () => {
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-3 cursor-pointer"
           >
-<<<<<<< HEAD
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
-=======
             <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
->>>>>>> 521049a04d79c42aecae9ca10931391cda4798f0
               <div className="text-white font-bold text-sm">SPPG</div>
             </div>
             <div className="hidden md:block">
@@ -108,7 +104,7 @@ const Navbar: React.FC = () => {
             onClick={handleProfileClick}
             className="flex items-center gap-2 p-1 pl-2 pr-3 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
               <span className="text-white font-medium text-xs">AF</span>
             </div>
             <ChevronDown className="w-4 h-4 text-gray-500 hidden md:block" />

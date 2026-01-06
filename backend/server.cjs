@@ -7,7 +7,7 @@ require('dotenv').config();
 const financeRoutes = require('./routes/financeRoutes.cjs');
 
 const app = express();
-<<<<<<<< < Temporary merge branch 1
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -349,23 +349,8 @@ app.get("/api/proxy/food-search", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  // =========
-  const PORT = process.env.PORT || 5000;
-
-  app.use(cors());
-  app.use(bodyParser.json());
-
-  // Daftarkan route
-  app.use('/api/finance', financeRoutes);
-
-  app.get('/', (req, res) => {
-    res.send('Server GovFinance Backend Jalan!');
-  });
-
-  app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
-    // >>>>>>>>> Temporary merge branch 2
-  });
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔗 Local: http://localhost:${PORT}`);
+});
