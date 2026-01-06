@@ -58,7 +58,11 @@ const Navbar: React.FC = () => {
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-3 cursor-pointer"
           >
+<<<<<<< HEAD
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
+=======
+            <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
+>>>>>>> 521049a04d79c42aecae9ca10931391cda4798f0
               <div className="text-white font-bold text-sm">SPPG</div>
             </div>
             <div className="hidden md:block">
