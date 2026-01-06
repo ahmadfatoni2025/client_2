@@ -1,36 +1,48 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const { createClient } = require("@supabase/supabase-js");
+const express = require('express');
+const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
-dotenv.config();
+// Perhatikan: pakai .cjs di akhir
+const financeRoutes = require('./routes/financeRoutes.cjs');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Inisialisasi Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
 
-console.log("✅ Supabase connected to:", process.env.SUPABASE_URL);
+if (!supabaseUrl || !supabaseKey) {
+  console.error("❌ Missing Supabase environment variables! Check your .env file.");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+console.log("✅ Supabase connected to:", supabaseUrl);
 
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
-    message: "🚀 Server connected to Supabase",
-    usage: "Access data using: /api/{table-name}",
+    message: "🚀 Server connected to Supabase & Finance API",
+    usage: "Access data using: /api/{table-name} or /api/finance",
     examples: [
       "/api/pemasok",
       "/api/menu",
       "/api/users",
-      "/api/products"
+      "/api/products",
+      "/api/finance",
+      "/api/transaksi"
     ],
     note: "Replace {table-name} with your actual table name in Supabase"
   });
 });
+
+// ========== ENDPOINT FINANCE ==========
+app.use('/api/finance', financeRoutes);
 
 // ========== ENDPOINT DINAMIS UNTUK SEMUA TABEL ==========
 // Format: /api/{nama_tabel}
@@ -61,7 +73,11 @@ app.get("/api/:table", async (req, res) => {
     });
 
     // Sorting
-    query = query.order(order_by, { ascending: order === "asc" });
+    try {
+      query = query.order(order_by, { ascending: order === "asc" });
+    } catch (e) {
+      console.warn(`Could not order by ${order_by}`);
+    }
 
     // Pagination
     query = query.range(offset, parseInt(offset) + parseInt(limit) - 1);
@@ -134,7 +150,7 @@ app.post("/api/:table", async (req, res) => {
     res.status(201).json({
       success: true,
       message: `Data added to ${table} successfully`,
-      data: data[0]
+      data: data ? data[0] : null
     });
 
   } catch (error) {
@@ -291,25 +307,50 @@ app.get("/api/:table/:id", async (req, res) => {
   }
 });
 
-// ========== ENDPOINT UNTUK CEK TABEL YANG ADA ==========
-app.get("/api-tables", async (req, res) => {
+// ========== ENDPOINT FOOD SEARCH (PROXY OFF) ==========
+app.get("/api/proxy/food-search", async (req, res) => {
   try {
-    // Catatan: Supabase tidak menyediakan endpoint langsung untuk list tables
-    // Anda perlu mengetahui nama tabel terlebih dahulu
-    // Ini hanya endpoint informasi
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ error: "Query is required" });
+
+    console.log(`🔍 Searching Open Food Facts for: ${query}`);
+
+    // Menggunakan API Open Food Facts (OFF) melalui axios
+    const axios = require('axios');
+    const response = await axios.get(`https://world.openfoodfacts.org/cgi/search.pl`, {
+      params: {
+        search_terms: query,
+        search_simple: 1,
+        action: 'process',
+        json: 1,
+        fields: 'product_name,nutriments,image_url,code,_id'
+      }
+    });
+
+    const data = response.data;
+
+    const results = data.products.map(p => ({
+      id: p._id || p.code,
+      name: p.product_name || "Unknown Product",
+      calories: Math.round(p.nutriments?.["energy-kcal_100g"] || 0),
+      protein: p.nutriments?.protein_100g || 0,
+      carbs: p.nutriments?.carbohydrates_100g || 0,
+      fat: p.nutriments?.fat_100g || 0,
+      image: p.image_url
+    }));
+
     res.json({
-      note: "Supabase doesn't provide direct table listing via API",
-      suggestion: "You need to know your table names beforehand",
-      common_tables: ["users", "products", "orders", "customers", "pemasok", "menu"],
-      usage: "Access tables using: /api/{table-name}",
-      example: "GET /api/pemasok"
+      success: true,
+      data: results
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("💥 Proxy error:", error);
+    res.status(500).json({ error: "Failed to fetch from Open Food Facts", message: error.message });
   }
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔗 Local: http://localhost:${PORT}`);
 });

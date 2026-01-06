@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, Home, Package, Utensils, DollarSign, BarChart3, Settings, Menu, Beef } from 'lucide-react';
-
+import { Search, Bell, ChevronDown, Home, Package, Utensils, DollarSign, Settings, Menu, Beef } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -24,7 +23,6 @@ const Navbar: React.FC = () => {
     { name: 'nutrisi', displayName: 'Nutrisi', icon: <Beef size={18} />, path: '/nutrisi' },
     { name: 'dapur', displayName: 'Dapur', icon: <Utensils size={18} />, path: '/dapur' },
     { name: 'keuangan', displayName: 'Keuangan', icon: <DollarSign size={18} />, path: '/keuangan' },
-    { name: 'laporan', displayName: 'Laporan', icon: <BarChart3 size={18} />, path: '/laporan' },
     { name: 'pengaturan', displayName: 'Pengaturan', icon: <Settings size={18} />, path: '/pengaturan' }
   ];
 
@@ -43,8 +41,7 @@ const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`bg-white sticky top-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${scrolled ? 'shadow-md' : ''
-        }`}
+      className={`bg-white sticky top-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${scrolled ? 'shadow-md' : ''}`}
       style={{ transform: scrolled ? 'translateY(-70px)' : 'translateY(0)' }}
     >
       {/* Top Bar - Fixed height to prevent layout jumps */}
@@ -61,7 +58,7 @@ const Navbar: React.FC = () => {
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-3 cursor-pointer"
           >
-            <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
               <div className="text-white font-bold text-sm">SPPG</div>
             </div>
             <div className="hidden md:block">

@@ -241,24 +241,24 @@ const NutritionLabel: React.FC = () => {
             <div className="container mx-auto px-4 py-8 space-y-8">
                 {/* Header dengan gradient modern */}
                 <div className="text-center mb-12">
-                    <div className="inline-block p-1 bg-gradient-to-r from-blue-500 to-teal-400 rounded-full mb-4">
+                    <div className="inline-block p-1 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full mb-4">
                         <div className="bg-white rounded-full p-2">
-                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-teal-400 rounded-full flex items-center justify-center">
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full flex items-center justify-center">
                                 <span className="text-white text-2xl font-bold">TKPI</span>
                             </div>
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">
+                    <h1 className="text-4xl font-bold text-slate-800 mb-3">
                         Database TKPI Indonesia
                     </h1>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-slate-400 max-w-2xl mx-auto">
                         Tabel Komposisi Pangan Indonesia - Sumber data gizi resmi dari Kementerian Kesehatan RI
                     </p>
                 </div>
 
                 {/* Kontrol Pilihan Makanan dengan card modern */}
-                <Card className="mb-8 shadow-lg border-0 rounded-2xl overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-500 to-teal-400 h-2"></div>
+                <Card className="mb-8 shadow-sm border-slate-100 rounded-3xl overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-500 h-1.5"></div>
                     <CardHeader>
                         <CardTitle className="text-xl font-semibold text-gray-800">
                             Pilih Bahan Pangan
@@ -371,7 +371,7 @@ const NutritionLabel: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="mt-4 md:mt-0">
-                                    <Badge className="bg-gradient-to-r from-blue-500 to-teal-400 text-white border-0">
+                                    <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0">
                                         TKPI 2017
                                     </Badge>
                                 </div>
