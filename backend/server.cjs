@@ -1,9 +1,10 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const { createClient } = require("@supabase/supabase-js");
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+require('dotenv').config();
 
-dotenv.config();
+// Perhatikan: pakai .cjs di akhir
+const financeRoutes = require('./routes/financeRoutes.cjs');
 
 const app = express();
 app.use(cors());
