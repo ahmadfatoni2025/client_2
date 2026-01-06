@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, ChefHat, Clock, MapPin, Package, Calendar, ChefHatIcon, CheckCircle2, Play } from 'lucide-react';
 
