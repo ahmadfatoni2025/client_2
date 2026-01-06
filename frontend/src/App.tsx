@@ -10,6 +10,7 @@ import Pengaturan from './page/pengaturan';
 import { Navigate } from 'react-router-dom';
 import TambahPemasok from './components/inventasris/TambahPemasok';
 
+
 function App() {
   return (
     <Router>
