@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import TambahPemasok from '@/components/inventasris/TambahPemasok';
 import Order from '@/components/inventasris/order';
 import StockOpname from '@/components/inventasris/StockOpname';
 import { Package, ShoppingCart, BarChart2, PlusCircle, RefreshCcw, LayoutDashboard, Database, AlertCircle, Calendar } from 'lucide-react';
+
+interface Item {
+    id: number;
+    nama_barang: string;
+    kategori: string;
+    stok_tersedia: number;
+    stok_minimum?: number;
+    satuan: string;
+}
 
 const InventoryPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -21,8 +30,8 @@ const InventoryPage: React.FC = () => {
             const prodData = prodRes.data;
 
             if (prodData.success) {
-                const items = prodData.data;
-                const low = items.filter((i: any) => i.stok_tersedia <= (i.stok_minimum || 5)).length;
+                const items: Item[] = prodData.data;
+                const low = items.filter((i: Item) => i.stok_tersedia <= (i.stok_minimum || 5)).length;
 
                 const orderRes = await axios.get('http://localhost:3001/api/transaksi?status=pending');
                 const orderData = orderRes.data;
@@ -52,7 +61,7 @@ const InventoryPage: React.FC = () => {
     ];
 
     return (
-        <div className="p-4 md:p-6 min-h-screen bg-gray-50">
+        <div className="p-4 md:p-6 min-h-screen transition-colors duration-500 bg-white">
             <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
 
                 {/* --- HEADER --- */}
@@ -77,7 +86,6 @@ const InventoryPage: React.FC = () => {
                             <span className="text-sm font-semibold text-gray-700">
                                 {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
-                            <div className="w-2 h-2 rounded-full bg-blue-500 ml-2 animate-pulse"></div>
                         </div>
                     </div>
                 </div>
@@ -116,8 +124,8 @@ const InventoryPage: React.FC = () => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === tab.id
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                    : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
                                 }`}
                         >
                             {tab.icon}
@@ -155,8 +163,16 @@ const InventoryPage: React.FC = () => {
     );
 };
 
-const StatCard = ({ label, value, sub, icon, color }: any) => {
-    const colorMap: any = {
+interface StatCardProps {
+    label: string;
+    value: number | string;
+    sub: string;
+    icon: React.ReactNode;
+    color: 'blue' | 'orange' | 'emerald' | 'indigo' | string;
+}
+
+const StatCard = ({ label, value, sub, icon, color }: StatCardProps) => {
+    const colorMap: Record<string, string> = {
         blue: 'bg-blue-50 text-blue-600',
         orange: 'bg-orange-50 text-orange-600',
         emerald: 'bg-emerald-50 text-emerald-600',

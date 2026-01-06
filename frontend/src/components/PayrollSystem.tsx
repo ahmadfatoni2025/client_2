@@ -87,7 +87,7 @@ const PayrollSystem: React.FC = () => {
       <div className="lg:col-span-4 space-y-8">
 
         {/* Form Registrasi */}
-        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-50 relative overflow-hidden group">
+        <div className="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-50 relative overflow-hidden group transition-colors">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-all opacity-50"></div>
 
           <h3 className="text-lg font-bold text-slate-800 mb-8 flex items-center gap-3 relative z-10">
@@ -115,11 +115,11 @@ const PayrollSystem: React.FC = () => {
                 value={newEmp.jabatan}
                 onChange={e => setNewEmp({ ...newEmp, jabatan: e.target.value })}
               >
-                <option>Staff Dapur</option>
-                <option>Ahli Gizi</option>
-                <option>Admin Keuangan</option>
-                <option>Logistik</option>
-                <option>Supir</option>
+                <option className="">Staff Dapur</option>
+                <option className="">Ahli Gizi</option>
+                <option className="">Admin Keuangan</option>
+                <option className="">Logistik</option>
+                <option className="">Supir</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -141,7 +141,7 @@ const PayrollSystem: React.FC = () => {
         </div>
 
         {/* Direktori Staff */}
-        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-50 min-h-[300px]">
+        <div className="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-50 min-h-[300px] transition-colors">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Direktori Aktif ({employees.length})</h3>
             <button onClick={fetchData} className="text-slate-300 hover:text-blue-500 transition-colors">
@@ -156,11 +156,11 @@ const PayrollSystem: React.FC = () => {
                     <Users size={18} />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-700 text-sm">{e.nama_lengkap}</p>
+                    <p className="font-bold text-slate-700 text-sm uppercase">{e.nama_lengkap}</p>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{e.jabatan}</p>
                   </div>
                 </div>
-                <span className="font-black text-emerald-600 text-xs">
+                <span className="font-black text-emerald-600 text-xs tracking-tighter">
                   Rp {e.gaji_pokok.toLocaleString('id-ID')}
                 </span>
               </li>
@@ -195,13 +195,13 @@ const PayrollSystem: React.FC = () => {
         </div>
 
         {/* History Table */}
-        <div className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-50 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-50 overflow-hidden transition-colors">
           <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
             <h3 className="font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
               <Clock className="text-slate-400" size={20} />
               Log Riwayat Payroll
             </h3>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Transaction Records</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Transaction Records</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -227,10 +227,10 @@ const PayrollSystem: React.FC = () => {
                       <td className="px-10 py-6 text-slate-400 text-xs font-bold">
                         {new Date(h.tanggal_proses).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
-                      <td className="px-10 py-6 font-black text-slate-700">{h.karyawan?.nama_lengkap || 'Staff Member'}</td>
+                      <td className="px-10 py-6 font-black text-slate-700 uppercase">{h.karyawan?.nama_lengkap || 'Staff Member'}</td>
                       <td className="px-10 py-6 text-right font-black text-slate-900">Rp {h.total_terima.toLocaleString('id-ID')}</td>
                       <td className="px-10 py-6 text-center">
-                        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100 shadow-inner">
                           <CheckCircle2 size={12} />
                           Disbursed
                         </div>

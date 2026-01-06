@@ -47,7 +47,7 @@ const ExecutiveDashboard: React.FC = () => {
         const res = await axios.get('http://localhost:3001/api/finance/dashboard/summary');
         setData(res.data.data);
         setError(null);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Gagal load dashboard", err);
         setError("Gagal terhubung ke server. Pastikan backend berjalan dan database telah terkonfigurasi.");
       } finally {

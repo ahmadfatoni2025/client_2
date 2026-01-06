@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Package, Truck, Calendar, Hash, FileText, Send, Info } from 'lucide-react';
 
 interface Supplier {
@@ -18,20 +18,21 @@ const Order = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/pemasok');
-        const result = await response.json();
-        if (result.success) {
-          setSuppliers(result.data);
-        }
-      } catch (error) {
-        console.error('Error fetching suppliers:', error);
+  const fetchSuppliers = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/pemasok');
+      const result = await response.json();
+      if (result.success) {
+        setSuppliers(result.data);
       }
-    };
-    fetchSuppliers();
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchSuppliers();
+  }, [fetchSuppliers]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -86,8 +87,8 @@ const Order = () => {
 
             <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                  <FileText size={14} className="text-gray-400" /> Nama Produk
+                <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                  <FileText size={14} /> Nama Produk
                 </label>
                 <input
                   type="text"
@@ -95,14 +96,14 @@ const Order = () => {
                   value={formData.product_name}
                   onChange={handleChange}
                   placeholder="e.g. Beras Premium Crystal"
-                  className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-0 focus:border-black outline-none transition-all placeholder:text-gray-300 font-medium text-sm"
+                  className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all placeholder:text-gray-300 font-medium text-sm"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 px-1">
                     <Hash size={14} /> Jumlah
                   </label>
                   <input
@@ -111,12 +112,12 @@ const Order = () => {
                     value={formData.quantity}
                     onChange={handleChange}
                     placeholder="0"
-                    className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-0 focus:border-black outline-none transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all font-medium text-sm"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 px-1">
                     <Calendar size={14} /> Tanggal
                   </label>
                   <input
@@ -124,32 +125,37 @@ const Order = () => {
                     name="order_date"
                     value={formData.order_date}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-0 focus:border-black outline-none transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all font-medium text-sm"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 px-1">
                   <Truck size={14} /> Pilih Pemasok
                 </label>
-                <select
-                  name="supplier_id"
-                  value={formData.supplier_id}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-0 focus:border-black outline-none transition-all appearance-none font-medium text-sm cursor-pointer"
-                  required
-                >
-                  <option value="">-- Pilih Supplier --</option>
-                  {suppliers.map((s: Supplier) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    name="supplier_id"
+                    value={formData.supplier_id}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all appearance-none font-medium text-sm cursor-pointer"
+                    required
+                  >
+                    <option value="" className="">-- Pilih Supplier --</option>
+                    {suppliers.map((s: Supplier) => (
+                      <option key={s.id} value={s.id} className="">{s.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <Truck size={14} />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest px-1">
                   Catatan Pengadaan
                 </label>
                 <textarea
@@ -158,14 +164,14 @@ const Order = () => {
                   onChange={handleChange}
                   rows={3}
                   placeholder="Detail instruksi atau spesifikasi..."
-                  className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-0 focus:border-black outline-none transition-all resize-none text-sm font-medium"
+                  className="w-full px-4 py-3 bg-[#fafafa] border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all resize-none text-sm font-medium"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full group relative flex items-center justify-center gap-3 bg-black text-white py-4 px-4 rounded-xl font-bold shadow-xl shadow-black/10 hover:bg-black/90 active:scale-[0.98] transition-all disabled:opacity-50"
+                className="w-full group relative flex items-center justify-center gap-3 bg-black text-white py-4 px-4 rounded-xl font-bold shadow-xl shadow-black/10 hover:bg-gray-900 active:scale-[0.98] transition-all disabled:opacity-50"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -181,14 +187,14 @@ const Order = () => {
         </div>
 
         {/* Right: Info/Guide Side */}
-        <div className="flex-1 space-y-6">
-          <div className="bg-blue-600 rounded-2xl p-8 text-white relative overflow-hidden group">
+        <div className="flex-1 space-y-6 w-full">
+          <div className="bg-blue-600 rounded-2xl p-8 text-white relative overflow-hidden group shadow-xl shadow-blue-500/10">
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
               <Truck size={120} />
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 text-center md:text-left">
               <h3 className="text-2xl font-black tracking-tight mb-2">Automated Ordering</h3>
-              <p className="text-blue-100/80 text-sm max-w-[300px] mb-6">Sistem akan secara otomatis mencatat pengadaan baru ke dalam log histori logistik.</p>
+              <p className="text-blue-100/80 text-sm max-w-[300px] mb-6 italic">Sistem akan secara otomatis mencatat pengadaan baru ke dalam log histori logistik.</p>
               <div className="flex items-center gap-2 bg-white/20 w-fit px-3 py-1.5 rounded-full backdrop-blur-md">
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                 <span className="text-[10px] font-bold uppercase tracking-tighter">System Balanced</span>
@@ -214,9 +220,15 @@ const Order = () => {
   );
 };
 
-const GuideCard = ({ icon, title, desc }: any) => (
-  <div className="bg-white border border-gray-100 shadow-sm p-6 rounded-2xl hover:border-black/10 transition-colors">
-    <div className="mb-4">{icon}</div>
+interface GuideCardProps {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
+const GuideCard = ({ icon, title, desc }: GuideCardProps) => (
+  <div className="bg-white border border-gray-100 shadow-sm p-6 rounded-2xl hover:border-black/10 transition-all group">
+    <div className="mb-4 p-3 bg-gray-50 w-fit rounded-xl group-hover:scale-110 transition-transform">{icon}</div>
     <h4 className="text-sm font-bold text-black mb-1">{title}</h4>
     <p className="text-xs text-gray-500 leading-relaxed font-medium">{desc}</p>
   </div>

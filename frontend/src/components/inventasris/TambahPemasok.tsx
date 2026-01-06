@@ -42,7 +42,7 @@ const TambahPemasok = () => {
             <div className="flex flex-col xl:flex-row gap-10">
                 {/* Left: Interactive Form */}
                 <div className="w-full xl:w-[500px]">
-                    <div className="bg-white border border-gray-200 rounded-[24px] shadow-sm overflow-hidden">
+                    <div className="bg-white border border-gray-200 rounded-[24px] shadow-sm overflow-hidden transition-colors">
                         <div className="px-8 py-7 border-b border-gray-100 bg-white">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 transform -rotate-1 group-hover:rotate-0 transition-transform">
@@ -120,7 +120,7 @@ const TambahPemasok = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full group relative flex items-center justify-center gap-3 bg-black text-white py-5 px-4 rounded-2xl font-black text-sm shadow-2xl shadow-black/10 hover:bg-black/90 active:scale-[0.98] transition-all disabled:opacity-50"
+                                className="w-full group relative flex items-center justify-center gap-3 bg-black text-white py-5 px-4 rounded-2xl font-black text-sm shadow-2xl shadow-black/10 hover:bg-gray-900 active:scale-[0.98] transition-all disabled:opacity-50"
                             >
                                 {loading ? (
                                     <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -153,7 +153,7 @@ const TambahPemasok = () => {
                             title="Region Coverage"
                             desc="Add localization tags to optimize logistics and delivery timelines."
                         />
-                        <div className="bg-black rounded-3xl p-8 flex flex-col justify-between text-white overflow-hidden relative group">
+                        <div className="bg-black rounded-3xl p-8 flex flex-col justify-between text-white overflow-hidden relative group border border-transparent transition-colors">
                             <ChevronRight size={80} className="absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity" />
                             <div>
                                 <h4 className="text-lg font-black tracking-tight mb-2">Vendor Portal</h4>
@@ -168,7 +168,7 @@ const TambahPemasok = () => {
                         </div>
                     </div>
 
-                    <div className="mt-auto bg-gray-50 border border-gray-100 rounded-3xl p-8">
+                    <div className="mt-auto bg-gray-50 border border-gray-100 rounded-3xl p-8 transition-colors">
                         <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Quick Integration Guide</h4>
                         <div className="space-y-4">
                             <GuideStep step="01" text="Input legal business name correctly." />
@@ -182,15 +182,26 @@ const TambahPemasok = () => {
     );
 };
 
-const FeatureCard = ({ icon, title, desc }: any) => (
-    <div className="bg-white border border-gray-100 p-8 rounded-[32px] hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300">
-        <div className="mb-6 w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center">{icon}</div>
+interface FeatureCardProps {
+    icon: React.ReactNode;
+    title: string;
+    desc: string;
+}
+
+const FeatureCard = ({ icon, title, desc }: FeatureCardProps) => (
+    <div className="bg-white border border-gray-100 p-8 rounded-[32px] hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <div className="mb-6 w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center transition-colors">{icon}</div>
         <h4 className="text-base font-black text-black mb-2">{title}</h4>
         <p className="text-[12px] text-gray-500 leading-relaxed font-semibold">{desc}</p>
     </div>
 );
 
-const GuideStep = ({ step, text }: any) => (
+interface GuideStepProps {
+    step: string;
+    text: string;
+}
+
+const GuideStep = ({ step, text }: GuideStepProps) => (
     <div className="flex items-center gap-4">
         <span className="text-[10px] font-black text-black/20 font-mono tracking-tighter">{step}</span>
         <p className="text-[11px] font-bold text-gray-600">{text}</p>

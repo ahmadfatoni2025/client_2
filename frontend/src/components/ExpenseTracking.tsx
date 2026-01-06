@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { ShoppingCart, Calendar, Store, CreditCard, FileText, MapPin, Navigation, Save, RefreshCcw, CheckCircle2 } from 'lucide-react';
 
@@ -27,7 +27,7 @@ const ExpenseTracking: React.FC = () => {
     status: 'idle'
   });
 
-  const fetchBudgets = async () => {
+  const fetchBudgets = useCallback(async () => {
     try {
       setIsFetching(true);
       const res = await axios.get('http://localhost:3001/api/finance/budgets');
@@ -37,18 +37,18 @@ const ExpenseTracking: React.FC = () => {
     } finally {
       setIsFetching(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBudgets();
-  }, []);
+  }, [fetchBudgets]);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
-      setGeo({ ...geo, status: 'error' });
+      setGeo(prev => ({ ...prev, status: 'error' }));
       return;
     }
-    setGeo({ ...geo, status: 'loading' });
+    setGeo(prev => ({ ...prev, status: 'loading' }));
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setGeo({
@@ -58,7 +58,7 @@ const ExpenseTracking: React.FC = () => {
         });
       },
       () => {
-        setGeo({ ...geo, status: 'error' });
+        setGeo(prev => ({ ...prev, status: 'error' }));
       }
     );
   };
@@ -97,18 +97,18 @@ const ExpenseTracking: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
 
-      <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] border border-slate-50 relative overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-slate-50 relative overflow-hidden transition-colors">
         {/* Background Accent */}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 to-red-500"></div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-orange-50 text-orange-600 rounded-3xl shadow-inner">
+            <div className="p-4 bg-orange-50 text-orange-600 rounded-3xl shadow-inner transition-colors">
               <ShoppingCart size={28} />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Pelaporan Belanja Operasional</h2>
-              <p className="text-slate-400 text-sm">Input data transaksi belanja harian dengan validasi lokasi.</p>
+              <p className="text-slate-400 text-sm italic">Input data transaksi belanja harian dengan validasi lokasi.</p>
             </div>
           </div>
           <button
@@ -132,9 +132,9 @@ const ExpenseTracking: React.FC = () => {
                 value={formData.id_anggaran}
                 onChange={(e) => setFormData({ ...formData, id_anggaran: e.target.value })}
               >
-                <option value="">-- Pilih Pos Anggaran --</option>
+                <option value="" className="">-- Pilih Pos Anggaran --</option>
                 {budgets.map((b) => (
-                  <option key={b.id_anggaran} value={b.id_anggaran}>
+                  <option key={b.id_anggaran} value={b.id_anggaran} className="">
                     {b.kategori} (Sisa: Rp {b.sisa_dana.toLocaleString('id-ID')})
                   </option>
                 ))}
@@ -198,9 +198,9 @@ const ExpenseTracking: React.FC = () => {
           </div>
 
           {/* Validation Tool */}
-          <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
+          <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 group hover:bg-white hover:shadow-xl transition-all duration-500">
             <div className="flex items-center gap-5">
-              <div className={`p-4 rounded-2xl transition-all ${geo.status === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-slate-400 shadow-sm'}`}>
+              <div className={`p-4 rounded-2xl transition-all ${geo.status === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-slate-400 shadow-sm border border-gray-100'}`}>
                 <MapPin size={24} />
               </div>
               <div>
@@ -215,7 +215,7 @@ const ExpenseTracking: React.FC = () => {
               disabled={geo.status === 'success'}
               className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all
                 ${geo.status === 'success'
-                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-inner'
                   : 'bg-white border border-slate-200 text-slate-500 hover:border-orange-500 hover:text-orange-600 shadow-sm'
                 }`}
             >
@@ -228,7 +228,7 @@ const ExpenseTracking: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/60 hover:-translate-y-1 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+              className="w-full py-5 bg-linear-to-r from-orange-600 to-red-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/60 hover:-translate-y-1 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
             >
               {loading ? <RefreshCcw className="animate-spin" size={20} /> : <Save size={20} />}
               {loading ? 'MEMPROSES DATA...' : 'SUBMIT TRANSAKSI'}

@@ -6,7 +6,7 @@ import Inventory from './page/inventory';
 import Nutrisi from './page/nutrisi';
 import Dapur from './page/dapur';
 import Keuangan from './page/keuangan';
-import Pengaturana from './page/pengaturana';
+import Pengaturan from './page/pengaturan';
 import { Navigate } from 'react-router-dom';
 import TambahPemasok from './components/inventasris/TambahPemasok';
 
@@ -21,7 +21,7 @@ function App() {
         <Route path="/nutrisi" element={<Nutrisi />} />
         <Route path="/dapur" element={<Dapur />} />
         <Route path="/keuangan" element={<Keuangan />} />
-        <Route path="/pengaturan" element={<Pengaturana />} />
+        <Route path="/pengaturan" element={<Pengaturan />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>

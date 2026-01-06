@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, ChefHat, Clock, MapPin, Package, Calendar, ChefHatIcon, CheckCircle2, Play } from 'lucide-react';
 
@@ -49,7 +49,7 @@ const Dapur = () => {
             if (res.data.success) {
                 setTasks(prev => prev.map(t => t.id === id ? { ...t, status: nextStatus } : t));
             }
-        } catch (err) {
+        } catch {
             setTasks(prev => prev.map(t => t.id === id ? { ...t, status: nextStatus } : t));
         }
     };
@@ -86,7 +86,7 @@ const Dapur = () => {
     };
 
     return (
-        <div className="p-4 md:p-6 min-h-screen bg-gray-50">
+        <div className="p-4 md:p-6 min-h-screen transition-colors duration-500 bg-white">
             <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
 
                 {/* Header Section */}
@@ -100,7 +100,7 @@ const Dapur = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div className="bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 transition-colors">
                             <div className="text-right">
                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Output</p>
                                 <p className="font-bold text-gray-900 text-xl leading-none">
@@ -111,7 +111,7 @@ const Dapur = () => {
                                 <Package size={24} />
                             </div>
                         </div>
-                        <div className="hidden lg:flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                        <div className="hidden lg:flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 transition-colors">
                             <Calendar className="text-gray-400" size={18} />
                             <span className="text-sm font-semibold text-gray-700">
                                 {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -121,7 +121,7 @@ const Dapur = () => {
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex flex-wrap justify-start md:justify-center gap-2 bg-gray-100/50 p-1.5 rounded-full border border-gray-100 max-w-3xl py-4 mx-auto overflow-x-auto no-scrollbar">
+                <div className="flex flex-wrap justify-start md:justify-center gap-2 bg-gray-100/50 p-1.5 rounded-full border border-gray-100 max-w-3xl py-4 mx-auto overflow-x-auto no-scrollbar transition-colors">
                     {filterOptions.map((option) => (
                         <button
                             key={option}
@@ -142,7 +142,7 @@ const Dapur = () => {
                 {/* Grid Kartu */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {loading ? (
-                        Array(3).fill(0).map((_, i) => <div key={i} className="h-64 bg-gray-100 rounded-3xl animate-pulse" />)
+                        Array(4).fill(0).map((_, i) => <div key={i} className="h-64 bg-gray-100 rounded-3xl animate-pulse" />)
                     ) : filteredTasks.map((task) => (
                         <div key={task.id} className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col h-full overflow-hidden relative">
                             {task.status === 'Siap Kirim' && <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-12 -mt-12 opacity-50"></div>}
@@ -157,7 +157,7 @@ const Dapur = () => {
                                 </div>
                             </div>
 
-                            <div className="mb-6 flex-grow">
+                            <div className="mb-6 grow">
                                 <h3 className="text-xl font-bold text-gray-900 leading-tight mb-4 group-hover:text-orange-600 transition-colors uppercase tracking-tight">{task.menu}</h3>
                                 <div className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-colors group-hover:bg-white group-hover:border-orange-100">
                                     <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
@@ -180,9 +180,9 @@ const Dapur = () => {
                                 <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all duration-1000 ease-out
-                                            ${task.status === 'Siap Kirim' ? 'bg-gradient-to-r from-emerald-400 to-green-500 w-full' :
-                                                task.status === 'Packing' ? 'bg-gradient-to-r from-blue-400 to-indigo-500 w-[75%]' :
-                                                    task.status === 'Memasak' ? 'bg-gradient-to-r from-orange-400 to-red-500 w-[40%]' :
+                                            ${task.status === 'Siap Kirim' ? 'bg-linear-to-r from-emerald-400 to-green-500 w-full' :
+                                                task.status === 'Packing' ? 'bg-linear-to-r from-blue-400 to-indigo-500 w-3/4' :
+                                                    task.status === 'Memasak' ? 'bg-linear-to-r from-orange-400 to-red-500 w-2/5' :
                                                         'bg-gray-300 w-[10%]'}`}
                                     ></div>
                                 </div>
@@ -234,7 +234,7 @@ const Dapur = () => {
                                 </button>
                             </div>
 
-                            <div className="p-10 overflow-y-auto space-y-10 custom-scrollbar">
+                            <div className="p-10 overflow-y-auto space-y-10 custom-scrollbar grow">
                                 <div className="grid md:grid-cols-2 gap-10">
                                     <div className="space-y-6">
                                         <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -258,7 +258,7 @@ const Dapur = () => {
                                         <div className="space-y-4">
                                             {(selectedTask.instruksi || "Siapkan bahan, Masak nasi, Olah protein, Packing porsi").split(',').map((step, i) => (
                                                 <div key={i} className="flex gap-4 group">
-                                                    <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100 text-gray-400 font-black text-xs border border-gray-200 group-hover:bg-orange-600 group-hover:text-white group-hover:border-orange-600 transition-all">
+                                                    <span className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100 text-gray-400 font-black text-xs border border-gray-200 group-hover:bg-orange-600 group-hover:text-white group-hover:border-orange-600 transition-all">
                                                         {i + 1}
                                                     </span>
                                                     <p className="text-gray-600 text-sm font-medium leading-relaxed pt-1.5">{step.trim()}</p>

@@ -61,7 +61,7 @@ const BudgetPlanning: React.FC = () => {
     <div className="space-y-10 animate-in fade-in duration-700">
 
       {/* --- FORM SECTION --- */}
-      <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-50 relative overflow-hidden group">
+      <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-slate-50 relative overflow-hidden group transition-colors">
         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-all duration-700 opacity-50"></div>
 
         <div className="flex items-center gap-4 mb-10 relative z-10">
@@ -94,11 +94,11 @@ const BudgetPlanning: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
               required
             >
-              <option value="">Pilih Kategori</option>
-              <option value="Belanja Bahan Makanan">Belanja Bahan Makanan (MBG)</option>
-              <option value="Operasional Dapur">Operasional Dapur</option>
-              <option value="Gaji & Honorarium">Gaji & Honorarium</option>
-              <option value="Logistik & Distribusi">Logistik & Distribusi</option>
+              <option value="" className="">Pilih Kategori</option>
+              <option value="Belanja Bahan Makanan" className="">Belanja Bahan Makanan (MBG)</option>
+              <option value="Operasional Dapur" className="">Operasional Dapur</option>
+              <option value="Gaji & Honorarium" className="">Gaji & Honorarium</option>
+              <option value="Logistik & Distribusi" className="">Logistik & Distribusi</option>
             </select>
           </div>
 
@@ -128,10 +128,10 @@ const BudgetPlanning: React.FC = () => {
       </div>
 
       {/* --- TABLE SECTION --- */}
-      <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-slate-50 overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-50 overflow-hidden transition-colors">
         <div className="px-10 py-8 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
           <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
-            <Wallet className="text-slate-400" size={20} />
+            <Wallet className="text-slate-400 cursor-pointer" size={20} />
             Dafar Master Anggaran
           </h3>
           <button onClick={fetchBudgets} className="p-2.5 bg-white text-slate-400 hover:text-cyan-600 rounded-xl border border-slate-100 transition-colors">
@@ -144,7 +144,7 @@ const BudgetPlanning: React.FC = () => {
             <thead className="bg-slate-50/80 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
               <tr>
                 <th className="px-10 py-6">Kategori Belanja</th>
-                <th className="px-10 py-6">Tahun</th>
+                <th className="px-10 py-6 text-center">Tahun</th>
                 <th className="px-10 py-6 text-right">Pagu Dana</th>
                 <th className="px-10 py-6 text-right">Serapan (%)</th>
                 <th className="px-10 py-6 text-right">Sisa Anggaran</th>
@@ -154,14 +154,14 @@ const BudgetPlanning: React.FC = () => {
               {loading ? (
                 Array(3).fill(0).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={5} className="px-10 py-6 bg-slate-50/20"></td>
+                    <td colSpan={5} className="px-10 py-8 bg-slate-50/20"></td>
                   </tr>
                 ))
               ) : budgets.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-10 py-20 text-center">
                     <Info className="mx-auto text-slate-200 mb-4" size={48} />
-                    <p className="text-slate-400 font-medium">Belum ada alokasi anggaran yang didaftarkan.</p>
+                    <p className="text-slate-400 font-medium tracking-tight uppercase tracking-widest text-[10px]">Belum ada alokasi anggaran yang didaftarkan.</p>
                   </td>
                 </tr>
               ) : (
@@ -175,15 +175,15 @@ const BudgetPlanning: React.FC = () => {
                           <span className="font-bold text-slate-700">{budget.kategori}</span>
                         </div>
                       </td>
-                      <td className="px-10 py-6 font-medium text-slate-400">{budget.tahun_anggaran}</td>
+                      <td className="px-10 py-6 font-medium text-slate-400 text-center">{budget.tahun_anggaran}</td>
                       <td className="px-10 py-6 text-right">
                         <span className="text-slate-900 font-black">Rp {budget.pagu_dana.toLocaleString('id-ID')}</span>
                       </td>
                       <td className="px-10 py-6">
                         <div className="flex flex-col items-end gap-1">
-                          <span className={`text-[10px] font-black ${serapan > 90 ? 'text-red-500' : 'text-cyan-600'}`}>{serapan}%</span>
+                          <span className={`text-[10px] font-black ${serapan > 90 ? 'text-red-500 font-bold' : 'text-cyan-600'}`}>{serapan}%</span>
                           <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${serapan > 90 ? 'bg-red-500' : 'bg-cyan-500'}`} style={{ width: `${serapan}%` }}></div>
+                            <div className={`h-full rounded-full transition-all duration-1000 ${serapan > 90 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]'}`} style={{ width: `${serapan}%` }}></div>
                           </div>
                         </div>
                       </td>

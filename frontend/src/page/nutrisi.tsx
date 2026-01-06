@@ -58,7 +58,7 @@ const Nutrisi: React.FC = () => {
     };
 
     return (
-        <div className="p-4 md:p-6 min-h-screen bg-gray-50">
+        <div className="p-4 md:p-6 min-h-screen transition-colors duration-500">
             <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
 
                 {/* Header Section */}
@@ -90,7 +90,7 @@ const Nutrisi: React.FC = () => {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Cari makanan (misal: Ayam Goreng, Nasi Kuning, dll)..."
+                        placeholder="Cari makanan (misal: Ayam Goreng)..."
                         className="w-full bg-white border border-gray-100 rounded-3xl pl-14 pr-32 py-5 text-lg font-medium shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300"
                     />
                     <button
@@ -103,7 +103,7 @@ const Nutrisi: React.FC = () => {
                 </form>
 
                 {/* Main Content: Table */}
-                <div className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
                     <div className="px-10 py-8 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                         <h3 className="font-black text-gray-900 uppercase tracking-tight flex items-center gap-3">
                             <Star className="text-amber-500" size={20} />
@@ -111,9 +111,9 @@ const Nutrisi: React.FC = () => {
                         </h3>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                            <thead className="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
                                 <tr>
                                     <th className="px-10 py-6">Nama Makanan</th>
                                     <th className="px-6 py-6 text-center">Energi (kcal)</th>
@@ -135,10 +135,10 @@ const Nutrisi: React.FC = () => {
                                                 <span className="font-bold text-gray-900 uppercase tracking-tight">{item.name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-6 text-center font-black text-orange-600">{item.calories}</td>
-                                        <td className="px-6 py-6 text-center font-bold text-blue-600">{item.protein}</td>
-                                        <td className="px-6 py-6 text-center font-bold text-amber-600">{item.carbs}</td>
-                                        <td className="px-6 py-6 text-center font-bold text-gray-600">{item.fat}</td>
+                                        <td className="px-6 py-6 text-center font-black text-orange-600 tracking-tighter">{item.calories}</td>
+                                        <td className="px-6 py-6 text-center font-bold text-blue-600 tracking-tighter">{item.protein}</td>
+                                        <td className="px-6 py-6 text-center font-bold text-amber-600 tracking-tighter">{item.carbs}</td>
+                                        <td className="px-6 py-6 text-center font-bold text-gray-600 tracking-tighter">{item.fat}</td>
                                         <td className="px-10 py-6 text-right">
                                             <button
                                                 onClick={() => togglePin(item)}
@@ -159,10 +159,10 @@ const Nutrisi: React.FC = () => {
                                             <td className="px-10 py-6">
                                                 <span className="font-medium text-gray-700">{item.name}</span>
                                             </td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-orange-500 transition-colors">{item.calories}</td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-blue-500 transition-colors">{item.protein}</td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-amber-500 transition-colors">{item.carbs}</td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-gray-600 transition-colors">{item.fat}</td>
+                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-orange-500 transition-colors tracking-tighter">{item.calories}</td>
+                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-blue-500 transition-colors tracking-tighter">{item.protein}</td>
+                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-amber-500 transition-colors tracking-tighter">{item.carbs}</td>
+                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-gray-600 transition-colors tracking-tighter">{item.fat}</td>
                                             <td className="px-10 py-6 text-right">
                                                 <button
                                                     onClick={() => togglePin(item)}
@@ -191,7 +191,7 @@ const Nutrisi: React.FC = () => {
                 </div>
 
                 {/* Footer Tip */}
-                <div className="bg-emerald-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+                <div className="bg-emerald-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden transition-all uppercase tracking-tight">
                     <div className="absolute top-0 right-0 p-10 opacity-10">
                         <Star size={150} />
                     </div>
@@ -201,10 +201,10 @@ const Nutrisi: React.FC = () => {
                                 <Star className="text-amber-400" />
                                 Standarisasi Menu MBG
                             </h3>
-                            <p className="text-emerald-100/80 max-w-xl">Data di atas merupakan referensi nutrisi per 100 gram bahan. Pastikan komposisi menu harian memenuhi target AKG (Angka Kecukupan Gizi) yang ditetapkan.</p>
+                            <p className="text-emerald-100/80 max-w-xl normal-case">Data di atas merupakan referensi nutrisi per 100 gram bahan. Pastikan komposisi menu harian memenuhi target AKG (Angka Kecukupan Gizi).</p>
                         </div>
                         <button className="whitespace-nowrap bg-white text-emerald-900 px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-emerald-50 transition-all flex items-center gap-2">
-                            Lihat Panduan Gizi
+                            <a href="https://nilaigizi.com/">Lihat Panduan Gizi</a>
                             <ArrowRight size={18} />
                         </button>
                     </div>
