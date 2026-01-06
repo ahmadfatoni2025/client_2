@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { AreaChart, Download, Printer, FileSpreadsheet, History, Info, CheckCircle2, AlertCircle } from 'lucide-react';
+import { AreaChart, Printer, FileSpreadsheet, History, Info, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface ReportData {
   summary: {
@@ -177,8 +177,8 @@ const FinancialReport: React.FC = () => {
                     </td>
                     <td className="px-10 py-6">
                       <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${item.tipe === 'payroll'
-                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                          : 'bg-orange-50 text-orange-600 border-orange-100'
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        : 'bg-orange-50 text-orange-600 border-orange-100'
                         }`}>
                         {item.kategori}
                       </span>
