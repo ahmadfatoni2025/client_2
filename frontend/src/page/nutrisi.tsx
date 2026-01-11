@@ -1,218 +1,547 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Apple, Search, Calendar, Pin, PinOff, Star, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { supabase } from "../lib/supabaseClient"; // Import client
+import {
+  Apple,
+  Search,
+  Pin,
+  PinOff,
+  Loader2,
+  Calculator,
+  Plus,
+  Trash2,
+  X,
+  Utensils,
+} from "lucide-react";
 
+// Interface sesuai kolom Database (Snake_case di DB -> CamelCase/Mapped di FE)
 interface FoodNutrient {
-    id: string | number;
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    image?: string;
-    isPinned?: boolean;
+  id: number;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  is_pinned: boolean; // Sesuai nama kolom di DB
+}
+
+interface MenuItem extends FoodNutrient {
+  grams: number;
 }
 
 const Nutrisi: React.FC = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<FoodNutrient[]>([]);
-    const [loading, setLoading] = useState(false);
+  // --- State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<FoodNutrient[]>([]);
+  const [pinnedItems, setPinnedItems] = useState<FoodNutrient[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    // Pinned items (Staple for MBG)
-    const [pinnedItems, setPinnedItems] = useState<FoodNutrient[]>([
-        { id: 'p1', name: 'Nasi Putih (Masak)', calories: 130, protein: 2.7, carbs: 28, fat: 0.3, isPinned: true },
-        { id: 'p2', name: 'Daging Ayam (Dada)', calories: 165, protein: 31, carbs: 0, fat: 3.6, isPinned: true },
-        { id: 'p3', name: 'Telur Ayam (Rebus)', calories: 155, protein: 13, carbs: 1.1, fat: 11, isPinned: true },
-        { id: 'p4', name: 'Tempe Kedelai Murni', calories: 193, protein: 19, carbs: 9.4, fat: 11, isPinned: true },
-        { id: 'p5', name: 'Tahu Putih', calories: 76, protein: 8, carbs: 1.9, fat: 4.8, isPinned: true },
-        { id: 'p6', name: 'Susu Sapi UHT', calories: 60, protein: 3.2, carbs: 4.8, fat: 3.3, isPinned: true }
-    ]);
+  // Calculator State
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-    const handleSearch = async (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
-        if (!searchQuery.trim()) return;
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newItem, setNewItem] = useState({
+    name: "",
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+  });
 
-        try {
-            setLoading(true);
-            const res = await axios.get(`http://localhost:3001/api/proxy/food-search?query=${encodeURIComponent(searchQuery)}`);
-            if (res.data.success) {
-                setSearchResults(res.data.data);
-            }
-        } catch (err) {
-            console.error("Search error:", err);
-            alert("Gagal mencari data makanan.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  // --- 1. Fetch Pinned Items on Mount ---
+  const fetchPinnedItems = async () => {
+    const { data, error } = await supabase
+      .from("nutrition_foods")
+      .select("*")
+      .eq("is_pinned", true)
+      .order("name", { ascending: true });
 
-    const togglePin = (item: FoodNutrient) => {
-        if (item.isPinned) {
-            setPinnedItems(prev => prev.filter(i => i.id !== item.id));
-            setSearchResults(prev => prev.map(i => i.id === item.id ? { ...i, isPinned: false } : i));
-        } else {
-            const newItem = { ...item, isPinned: true };
-            setPinnedItems(prev => [newItem, ...prev]);
-            setSearchResults(prev => prev.map(i => i.id === item.id ? { ...i, isPinned: true } : i));
-        }
-    };
+    if (data) setPinnedItems(data);
+    if (error) console.error("Error fetch pinned:", error);
+  };
 
-    return (
-        <div className="p-4 md:p-6 min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
+  useEffect(() => {
+    fetchPinnedItems();
+  }, []);
 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-                            <Apple className="text-emerald-600" size={32} />
-                            Database Nutrisi MBG
-                        </h1>
-                        <p className="text-gray-500 mt-1">Cari kandungan gizi makanan untuk standarisasi menu bergizi.</p>
-                    </div>
+  // --- 2. Search Logic ---
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    // Kalau kosong, jangan cari (hemat request)
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
-                            <Calendar className="text-gray-400" size={18} />
-                            <span className="text-sm font-semibold text-gray-700">
-                                {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("nutrition_foods")
+        .select("*")
+        .ilike("name", `%${searchQuery}%`) // Case insensitive search
+        .order("name");
 
-                {/* Search Bar */}
-                <form onSubmit={handleSearch} className="relative group max-w-2xl mx-auto">
-                    <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                        <Search className="text-gray-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
-                    </div>
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Cari makanan (misal: Ayam Goreng, Nasi Kuning, dll)..."
-                        className="w-full bg-white border border-gray-100 rounded-3xl pl-14 pr-32 py-5 text-lg font-medium shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300"
-                    />
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="absolute right-3 top-3 bottom-3 bg-emerald-600 text-white px-8 rounded-2xl font-bold hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-2"
-                    >
-                        {loading ? <Loader2 className="animate-spin" size={18} /> : 'Cari Data'}
-                    </button>
-                </form>
+      if (error) throw error;
+      // Filter agar yang sudah ada di pinned tidak muncul ganda di hasil search (opsional)
+      if (data) setSearchResults(data);
+    } catch (err) {
+      console.error("Search error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                {/* Main Content: Table */}
-                <div className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
-                    <div className="px-10 py-8 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                        <h3 className="font-black text-gray-900 uppercase tracking-tight flex items-center gap-3">
-                            <Star className="text-amber-500" size={20} />
-                            Daftar Kandungan Gizi (per 100g)
-                        </h3>
-                    </div>
+  // --- 3. Toggle Pin (Update DB) ---
+  const togglePin = async (item: FoodNutrient) => {
+    const newStatus = !item.is_pinned;
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                <tr>
-                                    <th className="px-10 py-6">Nama Makanan</th>
-                                    <th className="px-6 py-6 text-center">Energi (kcal)</th>
-                                    <th className="px-6 py-6 text-center">Protein (g)</th>
-                                    <th className="px-6 py-6 text-center">Karbo (g)</th>
-                                    <th className="px-6 py-6 text-center">Lemak (g)</th>
-                                    <th className="px-10 py-6 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {/* Pinned Items First */}
-                                {pinnedItems.map((item) => (
-                                    <tr key={item.id} className="bg-emerald-50/30 hover:bg-emerald-50 transition-colors">
-                                        <td className="px-10 py-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                                                    <Pin size={14} />
-                                                </div>
-                                                <span className="font-bold text-gray-900 uppercase tracking-tight">{item.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-6 text-center font-black text-orange-600">{item.calories}</td>
-                                        <td className="px-6 py-6 text-center font-bold text-blue-600">{item.protein}</td>
-                                        <td className="px-6 py-6 text-center font-bold text-amber-600">{item.carbs}</td>
-                                        <td className="px-6 py-6 text-center font-bold text-gray-600">{item.fat}</td>
-                                        <td className="px-10 py-6 text-right">
-                                            <button
-                                                onClick={() => togglePin(item)}
-                                                className="text-gray-400 hover:text-red-500 transition-colors"
-                                                title="Unpin Item"
-                                            >
-                                                <PinOff size={18} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+    // Optimistic Update UI
+    const updateLocalList = (list: FoodNutrient[]) =>
+      list.map((i) => (i.id === item.id ? { ...i, is_pinned: newStatus } : i));
 
-                                {/* Search Results */}
-                                {searchResults
-                                    .filter(res => !pinnedItems.find(p => p.id === res.id))
-                                    .map((item) => (
-                                        <tr key={item.id} className="group hover:bg-gray-50 transition-colors">
-                                            <td className="px-10 py-6">
-                                                <span className="font-medium text-gray-700">{item.name}</span>
-                                            </td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-orange-500 transition-colors">{item.calories}</td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-blue-500 transition-colors">{item.protein}</td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-amber-500 transition-colors">{item.carbs}</td>
-                                            <td className="px-6 py-6 text-center font-bold text-gray-400 group-hover:text-gray-600 transition-colors">{item.fat}</td>
-                                            <td className="px-10 py-6 text-right">
-                                                <button
-                                                    onClick={() => togglePin(item)}
-                                                    className="opacity-0 group-hover:opacity-100 p-2 bg-gray-100 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
-                                                    title="Pin untuk MBG"
-                                                >
-                                                    <Pin size={16} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+    setPinnedItems((prev) => {
+      if (newStatus) return [...prev, { ...item, is_pinned: true }];
+      return prev.filter((i) => i.id !== item.id);
+    });
+    setSearchResults(updateLocalList);
 
-                                {searchResults.length === 0 && !loading && (
-                                    <tr>
-                                        <td colSpan={6} className="px-10 py-20 text-center">
-                                            <div className="flex flex-col items-center">
-                                                <Search className="text-gray-200 mb-4" size={48} />
-                                                <p className="text-gray-400 font-medium max-w-xs">Gunakan kolom pencarian di atas untuk menemukan data nutrisi produk lainnya.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    // Update DB
+    const { error } = await supabase
+      .from("nutrition_foods")
+      .update({ is_pinned: newStatus })
+      .eq("id", item.id);
 
-                {/* Footer Tip */}
-                <div className="bg-emerald-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-10 opacity-10">
-                        <Star size={150} />
-                    </div>
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div>
-                            <h3 className="text-2xl font-black mb-2 flex items-center gap-3">
-                                <Star className="text-amber-400" />
-                                Standarisasi Menu MBG
-                            </h3>
-                            <p className="text-emerald-100/80 max-w-xl">Data di atas merupakan referensi nutrisi per 100 gram bahan. Pastikan komposisi menu harian memenuhi target AKG (Angka Kecukupan Gizi) yang ditetapkan.</p>
-                        </div>
-                        <button className="whitespace-nowrap bg-white text-emerald-900 px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-emerald-50 transition-all flex items-center gap-2">
-                            Lihat Panduan Gizi
-                            <ArrowRight size={18} />
-                        </button>
-                    </div>
-                </div>
+    if (error) {
+      console.error("Gagal update pin:", error);
+      fetchPinnedItems(); // Revert jika gagal
+    }
+  };
 
-            </div>
-        </div>
+  // --- 4. Insert Manual Data ---
+  const handleSaveNewItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { data, error } = await supabase
+        .from("nutrition_foods")
+        .insert([{ ...newItem, is_pinned: true }]) // Otomatis pin item baru
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setPinnedItems((prev) => [data, ...prev]);
+        setIsModalOpen(false);
+        setNewItem({ name: "", calories: 0, protein: 0, carbs: 0, fat: 0 });
+      }
+    } catch (err) {
+      alert("Gagal menyimpan data.");
+      console.error(err);
+    }
+  };
+
+  // --- Calculator Logic ---
+  const addToMenu = (item: FoodNutrient) => {
+    const existing = menuItems.find((m) => m.id === item.id);
+    if (existing) {
+      setMenuItems((prev) =>
+        prev.map((m) => (m.id === item.id ? { ...m, grams: m.grams + 50 } : m)),
+      );
+    } else {
+      setMenuItems((prev) => [...prev, { ...item, grams: 100 }]);
+    }
+  };
+
+  const updateGrams = (id: number, grams: number) => {
+    setMenuItems((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, grams: grams } : m)),
     );
+  };
+
+  const removeFromMenu = (id: number) => {
+    setMenuItems((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const totals = useMemo(() => {
+    return menuItems.reduce(
+      (acc, item) => {
+        const ratio = item.grams / 100;
+        return {
+          calories: acc.calories + item.calories * ratio,
+          protein: acc.protein + item.protein * ratio,
+          carbs: acc.carbs + item.carbs * ratio,
+          fat: acc.fat + item.fat * ratio,
+        };
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    );
+  }, [menuItems]);
+
+  return (
+    <div className="p-4 md:p-6 min-h-screen bg-gray-50 font-sans">
+      <div className="max-w-7xl mx-auto space-y-6 pb-12 animate-in fade-in duration-500">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+              <Apple className="text-emerald-600" size={32} />
+              Database & Kalkulator Gizi
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Tools Ahli Gizi untuk manajemen menu MBG (Terintegrasi Database).
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-200 transition-colors"
+            >
+              <Plus size={18} />
+              Tambah Data Manual
+            </button>
+          </div>
+        </div>
+
+        {/* Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Search & Table */}
+          <div className="lg:col-span-2 space-y-6">
+            <form onSubmit={handleSearch} className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <Search
+                  className="text-gray-400 group-focus-within:text-emerald-500 transition-colors"
+                  size={20}
+                />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari makanan di database..."
+                className="w-full bg-white border border-gray-100 rounded-2xl pl-14 pr-32 py-4 text-base font-medium shadow-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="absolute right-2 top-2 bottom-2 bg-emerald-600 text-white px-6 rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center gap-2"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  "Cari"
+                )}
+              </button>
+            </form>
+
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <Utensils size={18} className="text-emerald-600" />
+                  Daftar Bahan Makanan
+                </h3>
+                <span className="text-xs text-gray-400 font-medium">
+                  Per 100 gram
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-gray-400 uppercase tracking-wider text-[10px] font-bold">
+                    <tr>
+                      <th className="px-6 py-4">Nama</th>
+                      <th className="px-4 py-4 text-center">Kalori</th>
+                      <th className="px-4 py-4 text-center">Prot</th>
+                      <th className="px-4 py-4 text-center">Karbo</th>
+                      <th className="px-4 py-4 text-center">Lemak</th>
+                      <th className="px-6 py-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {/* Gabungkan Pinned dan Search Results (hilangkan duplikat by ID) */}
+                    {[
+                      ...pinnedItems,
+                      ...searchResults.filter(
+                        (r) => !pinnedItems.find((p) => p.id === r.id),
+                      ),
+                    ].map((item) => (
+                      <tr
+                        key={item.id}
+                        className="group hover:bg-emerald-50/30 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-700 flex items-center gap-2">
+                          {item.is_pinned && (
+                            <Pin
+                              size={12}
+                              className="text-emerald-600 fill-emerald-600"
+                            />
+                          )}
+                          {item.name}
+                        </td>
+                        <td className="px-4 py-4 text-center text-gray-600">
+                          {item.calories}
+                        </td>
+                        <td className="px-4 py-4 text-center text-blue-600 font-semibold">
+                          {item.protein}
+                        </td>
+                        <td className="px-4 py-4 text-center text-amber-600 font-semibold">
+                          {item.carbs}
+                        </td>
+                        <td className="px-4 py-4 text-center text-gray-500 font-semibold">
+                          {item.fat}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => togglePin(item)}
+                              className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              {item.is_pinned ? (
+                                <PinOff size={16} />
+                              ) : (
+                                <Pin size={16} />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => addToMenu(item)}
+                              className="p-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-lg transition-all"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Calculator */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-3xl shadow-xl shadow-emerald-900/5 border border-emerald-100 overflow-hidden sticky top-6">
+              <div className="bg-emerald-900 px-6 py-5 text-white flex justify-between items-center">
+                <h3 className="font-bold flex items-center gap-2">
+                  <Calculator size={20} className="text-amber-400" />
+                  Kalkulator Menu
+                </h3>
+                <span className="text-xs bg-emerald-800 px-2 py-1 rounded-md text-emerald-100">
+                  {menuItems.length} Item
+                </span>
+              </div>
+
+              <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
+                {menuItems.length === 0 ? (
+                  <div className="text-center py-10 text-gray-400">
+                    <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Utensils size={24} className="text-gray-300" />
+                    </div>
+                    <p className="text-sm">Belum ada item dipilih.</p>
+                  </div>
+                ) : (
+                  menuItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-gray-50 rounded-xl p-3 border border-gray-100 text-sm"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-bold text-gray-800 line-clamp-1">
+                          {item.name}
+                        </span>
+                        <button
+                          onClick={() => removeFromMenu(item.id)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-1">
+                            <input
+                              type="number"
+                              value={item.grams}
+                              onChange={(e) =>
+                                updateGrams(item.id, Number(e.target.value))
+                              }
+                              className="w-full outline-none text-right font-bold text-emerald-700"
+                            />
+                            <span className="text-xs text-gray-400">g</span>
+                          </div>
+                        </div>
+                        <div className="text-right text-xs text-gray-500 w-16">
+                          {((item.calories * item.grams) / 100).toFixed(0)} kcal
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Total Summary */}
+              <div className="bg-gray-50 border-t border-gray-100 p-6 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500">Total Energi</span>
+                    <span className="font-black text-gray-900 text-lg">
+                      {totals.calories.toFixed(0)}{" "}
+                      <span className="text-xs font-normal text-gray-400">
+                        kcal
+                      </span>
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-orange-500 rounded-full"
+                      style={{
+                        width: `${Math.min((totals.calories / 700) * 100, 100)}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-blue-50 p-2 rounded-lg">
+                    <div className="text-blue-700 font-bold text-sm">
+                      {totals.protein.toFixed(1)}g
+                    </div>
+                    <div className="text-[10px] text-blue-400 uppercase font-bold">
+                      Prot
+                    </div>
+                  </div>
+                  <div className="bg-amber-50 p-2 rounded-lg">
+                    <div className="text-amber-700 font-bold text-sm">
+                      {totals.carbs.toFixed(1)}g
+                    </div>
+                    <div className="text-[10px] text-amber-400 uppercase font-bold">
+                      Carb
+                    </div>
+                  </div>
+                  <div className="bg-gray-100 p-2 rounded-lg">
+                    <div className="text-gray-700 font-bold text-sm">
+                      {totals.fat.toFixed(1)}g
+                    </div>
+                    <div className="text-[10px] text-gray-400 uppercase font-bold">
+                      Fat
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Insert */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="font-bold text-gray-900">Tambah Data Makanan</h3>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <form onSubmit={handleSaveNewItem} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                    Nama Makanan
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    value={newItem.name}
+                    onChange={(e) =>
+                      setNewItem({ ...newItem, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                      Kalori
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      step="0.1"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      value={newItem.calories || ""}
+                      onChange={(e) =>
+                        setNewItem({
+                          ...newItem,
+                          calories: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-blue-500 uppercase mb-1">
+                      Protein
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      step="0.1"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                      value={newItem.protein || ""}
+                      onChange={(e) =>
+                        setNewItem({
+                          ...newItem,
+                          protein: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-amber-500 uppercase mb-1">
+                      Karbo
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      step="0.1"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                      value={newItem.carbs || ""}
+                      onChange={(e) =>
+                        setNewItem({
+                          ...newItem,
+                          carbs: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                      Lemak
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      step="0.1"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-gray-500 outline-none"
+                      value={newItem.fat || ""}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, fat: Number(e.target.value) })
+                      }
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition-colors"
+                >
+                  Simpan Data
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Nutrisi;

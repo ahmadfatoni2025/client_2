@@ -35,8 +35,9 @@ const Navbar: React.FC = () => {
       className={`bg-white sticky top-0 z-50 transition-all duration-300 ease-in-out ${scrolled ? 'shadow-md shadow-gray-200/50' : ''}`}
     >
       {/* Top Bar - On desktop it hides on scroll, on mobile it stays or adjusts */}
+      {/* PERBAIKAN: h-[70px] -> h-17.5 */}
       <div
-        className={`flex items-center justify-between px-6 border-b border-gray-100 transition-all duration-300 overflow-hidden ${scrolled ? 'h-0 opacity-0 md:h-[70px] md:opacity-100' : 'h-[70px] opacity-100'}`}
+        className={`flex items-center justify-between px-6 border-b border-gray-100 transition-all duration-300 overflow-hidden ${scrolled ? 'h-0 opacity-0 md:h-17.5 md:opacity-100' : 'h-17.5 opacity-100'}`}
       >
         {/* Left: Logo */}
         <div className="flex items-center gap-3">
@@ -50,7 +51,8 @@ const Navbar: React.FC = () => {
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+            {/* PERBAIKAN: bg-gradient-to-br -> bg-linear-to-br */}
+            <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
               <div className="text-white font-bold text-sm tracking-tighter">MBG</div>
             </div>
             <div className="hidden md:block">
@@ -82,13 +84,15 @@ const Navbar: React.FC = () => {
             <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
           </button>
 
-          <div className="h-8 w-[1px] bg-gray-100 mx-1 hidden md:block"></div>
+          {/* PERBAIKAN: w-[1px] -> w-px */}
+          <div className="h-8 w-px bg-gray-100 mx-1 hidden md:block"></div>
 
           <button
             onClick={() => navigate('/pengaturan')}
             className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded-xl transition-all border border-transparent hover:border-gray-100"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+            {/* PERBAIKAN: bg-gradient-to-br -> bg-linear-to-br */}
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
               <span className="text-white font-black text-[10px]">AF</span>
             </div>
             <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />

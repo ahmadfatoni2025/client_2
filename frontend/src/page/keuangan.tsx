@@ -6,32 +6,59 @@ import PayrollSystem from '../components/PayrollSystem';
 import FinancialReport from '../components/FinancialReport';
 import { Wallet, Landmark, ReceiptText, Users, AreaChart, RefreshCcw, TrendingUp, Calendar } from 'lucide-react';
 
+// --- Interface untuk Tipe Data ---
+interface FinanceSummary {
+  pagu: number;
+  terpakai: number;
+  serapan: number;
+}
+
 const Keuangan = () => {
   const [activeTab, setActiveTab] = useState('rab');
-  const [summary, setSummary] = useState({
+  const [summary, setSummary] = useState<FinanceSummary>({
     pagu: 0,
     terpakai: 0,
     serapan: 0
   });
 
-  const fetchFinanceSummary = async () => {
+  // --- 1. Fungsi Fetch Data (MURNI: Hanya ambil data, tidak set state di sini) ---
+  // Kita definisikan fungsi ini agar bisa dipakai ulang (di useEffect & tombol refresh)
+  const getFinanceData = async (): Promise<FinanceSummary | null> => {
     try {
       const res = await axios.get('http://localhost:3001/api/finance/dashboard/summary');
       if (res.data.status === 'success') {
-        setSummary({
+        return {
           pagu: res.data.data.finance.total_anggaran,
           terpakai: res.data.data.finance.terpakai,
           serapan: res.data.data.finance.serapan
-        });
+        };
       }
+      return null;
     } catch (err) {
       console.error("Gagal load ringkasan keuangan", err);
+      return null;
     }
   };
 
+  // --- 2. Effect untuk Initial Load ---
+  // Linter aman karena setState ada di dalam .then() (callback), bukan direct call
   useEffect(() => {
-    fetchFinanceSummary();
-  }, [activeTab]);
+    let isMounted = true; // Penjaga agar tidak memory leak
+    
+    getFinanceData().then((data) => {
+      if (isMounted && data) {
+        setSummary(data);
+      }
+    });
+
+    return () => { isMounted = false; };
+  }, []);
+
+  // --- 3. Handler Tombol Refresh ---
+  const handleRefresh = async () => {
+    const data = await getFinanceData();
+    if (data) setSummary(data);
+  };
 
   const tabs = [
     { id: 'rab', label: 'Perencanaan (RAB)', icon: <Landmark size={18} /> },
@@ -60,7 +87,7 @@ const Keuangan = () => {
               <span className="text-xl font-black text-cyan-600 leading-tight">{summary.serapan}%</span>
             </div>
             <button
-              onClick={fetchFinanceSummary}
+              onClick={handleRefresh}
               className="p-3 bg-white text-gray-400 hover:text-cyan-600 rounded-2xl border border-gray-100 shadow-sm transition-all"
             >
               <RefreshCcw size={20} />
@@ -76,7 +103,7 @@ const Keuangan = () => {
 
         {/* --- QUICK STATS --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm flex items-center gap-5 group hover:shadow-xl transition-all">
+          <div className="bg-white p-6 rounded-4xl border border-gray-50 shadow-sm flex items-center gap-5 group hover:shadow-xl transition-all">
             <div className="p-4 bg-cyan-50 text-cyan-600 rounded-2xl group-hover:bg-cyan-600 group-hover:text-white transition-all shadow-inner">
               <Landmark size={24} />
             </div>
@@ -85,7 +112,7 @@ const Keuangan = () => {
               <h4 className="text-xl font-black text-gray-800">Rp {summary.pagu.toLocaleString('id-ID')}</h4>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm flex items-center gap-5 group hover:shadow-xl transition-all">
+          <div className="bg-white p-6 rounded-4xl border border-gray-50 shadow-sm flex items-center gap-5 group hover:shadow-xl transition-all">
             <div className="p-4 bg-orange-50 text-orange-600 rounded-2xl group-hover:bg-orange-600 group-hover:text-white transition-all shadow-inner">
               <TrendingUp size={24} />
             </div>
@@ -94,7 +121,7 @@ const Keuangan = () => {
               <h4 className="text-xl font-black text-gray-800">Rp {summary.terpakai.toLocaleString('id-ID')}</h4>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm flex items-center gap-5 group hover:shadow-xl transition-all">
+          <div className="bg-white p-6 rounded-4xl border border-gray-50 shadow-sm flex items-center gap-5 group hover:shadow-xl transition-all">
             <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-inner">
               <AreaChart size={24} />
             </div>
@@ -123,7 +150,7 @@ const Keuangan = () => {
         </div>
 
         {/* --- CONTENT AREA --- */}
-        <div className="min-h-[500px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="min-h-125 animate-in fade-in slide-in-from-bottom-4 duration-700">
           {activeTab === 'rab' && <BudgetPlanning />}
           {activeTab === 'belanja' && <ExpenseTracking />}
           {activeTab === 'payroll' && <PayrollSystem />}

@@ -5,6 +5,21 @@ import Order from '@/components/inventasris/order';
 import StockOpname from '@/components/inventasris/StockOpname';
 import { Package, ShoppingCart, BarChart2, PlusCircle, RefreshCcw, LayoutDashboard, Database, AlertCircle, Calendar } from 'lucide-react';
 
+// --- Tipe Data untuk Menghindari 'any' ---
+interface InventoryItem {
+    stok_tersedia: number;
+    stok_minimum?: number;
+    [key: string]: unknown; // Mengizinkan properti lain
+}
+
+interface StatCardProps {
+    label: string;
+    value: number | string;
+    sub: string;
+    icon: React.ReactNode;
+    color: 'blue' | 'orange' | 'emerald' | 'indigo';
+}
+
 const InventoryPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [stats, setStats] = useState({
@@ -21,8 +36,9 @@ const InventoryPage: React.FC = () => {
             const prodData = prodRes.data;
 
             if (prodData.success) {
-                const items = prodData.data;
-                const low = items.filter((i: any) => i.stok_tersedia <= (i.stok_minimum || 5)).length;
+                const items: InventoryItem[] = prodData.data;
+                // Menggunakan tipe data InventoryItem, bukan any
+                const low = items.filter((i) => i.stok_tersedia <= (i.stok_minimum || 5)).length;
 
                 const orderRes = await axios.get('http://localhost:3001/api/transaksi?status=pending');
                 const orderData = orderRes.data;
@@ -116,8 +132,8 @@ const InventoryPage: React.FC = () => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === tab.id
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                    : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
                                 }`}
                         >
                             {tab.icon}
@@ -127,7 +143,7 @@ const InventoryPage: React.FC = () => {
                 </div>
 
                 {/* --- CONTENT AREA --- */}
-                <div className="bg-white rounded-[2rem] p-6 md:p-10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 min-h-[500px]">
+                <div className="bg-white rounded-4xl p-6 md:p-10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 min-h-125">
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {activeTab === 'overview' && (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -155,8 +171,9 @@ const InventoryPage: React.FC = () => {
     );
 };
 
-const StatCard = ({ label, value, sub, icon, color }: any) => {
-    const colorMap: any = {
+// --- Komponen StatCard Diperbaiki ---
+const StatCard = ({ label, value, sub, icon, color }: StatCardProps) => {
+    const colorMap: Record<string, string> = {
         blue: 'bg-blue-50 text-blue-600',
         orange: 'bg-orange-50 text-orange-600',
         emerald: 'bg-emerald-50 text-emerald-600',

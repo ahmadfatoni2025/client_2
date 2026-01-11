@@ -53,7 +53,8 @@ const Pengaturana: React.FC = () => {
                     </div>
 
                     {/* Main Settings Card */}
-                    <div className="lg:col-span-3 bg-white rounded-[2.5rem] p-6 md:p-10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 min-h-[500px]">
+                    {/* UPDATED: rounded-4xl & min-h-125 */}
+                    <div className="lg:col-span-3 bg-white rounded-4xl p-6 md:p-10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 min-h-125">
                         <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                             {activeTab === 'umum' && (
                                 <div className="space-y-10">
